@@ -9,17 +9,18 @@ from PIL import ImageFont
 from PIL import ImageOps
 
 # Create the in-memory stream
-stream = BytesIO()
 camera = PiCamera()
+camera.resolution = (640, 480)
 camera.start_preview()
-time.sleep(0.5)
-camera.capture(stream, format='jpeg')
-# "Rewind" the stream to the beginning so we can read its content
+time.sleep(2)
 
-stream.seek(0)
-image = ImageOps.flip(Image.open(stream))
-draw = ImageDraw.Draw(image)
-myFont = ImageFont.truetype('cnr.otf', 32)
-draw.text((28, 600), "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")), font=myFont, fill=(255, 255, 255))
+while True:
+    stream = BytesIO()
+    camera.capture(stream, format='jpeg')
+    image = ImageOps.flip(Image.open(stream))
+    draw = ImageDraw.Draw(image)
+    myFont = ImageFont.truetype('cnr.otf', 32)
+    draw.text((28, 600), "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")), font=myFont, fill=(255, 255, 255))
 
-image.save('image-{}.jpg'.format(int(time.time())))
+    image.save('capture.jpg'.format(int(time.time())))
+    time.sleep(0.1)
