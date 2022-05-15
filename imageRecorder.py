@@ -10,7 +10,7 @@ from PIL import ImageOps
 
 # Create the in-memory stream
 camera = PiCamera()
-camera.resolution = (1024, 768)
+camera.resolution = (800, 600)
 camera.start_preview()
 stream = BytesIO()
 time.sleep(2)
@@ -18,12 +18,13 @@ time.sleep(2)
 try:
     i = 1
     start = time.time()
-    for foo in camera.capture_continuous(stream, 'jpeg', burst=True):
+    for foo in camera.capture_continuous(stream, 'jpeg', use_video_port=True):
         print('Captured image {} in time {:.2f}s'.format(i, time.time() - start))
         image = ImageOps.flip(Image.open(stream))
         draw = ImageDraw.Draw(image)
         myFont = ImageFont.truetype('cnr.otf', 32)
         draw.text((28, 600), "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")), font=myFont, fill=(255, 255, 255))
+        print('Processed image {} in time {:.2f}s'.format(i, time.time() - start))
 
         image.save('capture.jpg')
         print('Saved image {} in time {:.2f}s'.format(i, time.time() - start))

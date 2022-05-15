@@ -7,7 +7,6 @@
 
         <script>
             function refreshImage() {
-                console.log('Refreshing')
                 let canvas = document.getElementById('capture')
                 let ctx = canvas.getContext('2d');
                 const image = new Image();
@@ -17,7 +16,7 @@
                     ctx.drawImage(image, 0, 0, 1024, 768);
                 };
                 image.src = "/capture?time="+new Date().getTime();
-                setTimeout(function() { refreshImage(); }, 10);
+                setTimeout(function() { refreshImage(); }, 20);
             }
 
             refreshImage();
