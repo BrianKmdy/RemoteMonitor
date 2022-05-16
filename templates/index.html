@@ -1,25 +1,32 @@
 <html>
-    <script src="https://d3js.org/d3.v5.js"></script>
     <body>
-        <canvas id="capture" width="1024" height="768"">
+        <canvas id="video" width="1024" height="768"">
         Your browser does not support the HTML5 canvas tag.
         </canvas>
 
-        <script>
-            function refreshImage() {
-                let canvas = document.getElementById('capture')
-                let ctx = canvas.getContext('2d');
-                const image = new Image();
+        <script type="module">
+            import { io } from "https://cdn.socket.io/4.3.0/socket.io.esm.min.js";
+            var socket = io();
+
+            let canvas = document.getElementById('video')
+            let ctx = canvas.getContext('2d');
+
+            function draw(imageBytes){
+                var base64 = btoa(new Uint8Array(imageBytes).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                var image = new Image();
+                image.src = "data:image/jpeg;base64," + base64;
                 image.onload = () => {
                     ctx.imageSmoothingEnabled = false;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(image, 0, 0, 1024, 768);
                 };
-                image.src = "/capture?time="+new Date().getTime();
-                setTimeout(function() { refreshImage(); }, 25);
             }
 
-            refreshImage();
+            socket.on('frame', function(message) {
+                console.log('Received image ' + message.index)
+                draw(message.bytes)
+            });
+
         </script>
     </body>
 </html>

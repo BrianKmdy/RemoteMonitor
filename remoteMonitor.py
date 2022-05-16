@@ -1,21 +1,23 @@
 import flask
-import sqlite3
-import json
-import imageRecorder
+import flask_socketio
 import threading
+import imageRecorder
 
 app = flask.Flask(__name__)
+socketio = flask_socketio.SocketIO(app, async_mode='threading')
+
+i = 0
+def broadcastThread():
+    global i
+    while True:
+        image = imageRecorder.imageQueue.get()
+        print('Sending image ' + str(i))
+        socketio.emit('frame', {'index': i, 'bytes': image})
+        i += 1
 
 @app.route('/')
 def home():
     return flask.render_template('index.html')
-
-@app.route('/data')
-def data():
-    con = sqlite3.connect('humidity.db')
-    response = json.dumps([row for row in con.cursor().execute('SELECT * from humidity')])
-    con.close()
-    return response
 
 @app.route('/capture')
 def capture():
@@ -24,6 +26,16 @@ def capture():
         return flask.Response(imageRecorder.imageQueue.get(), mimetype="image/jpg")
     return flask.Response()
 
+@socketio.on('connect')
+def connect(auth):
+    print('User connected')
+
+@socketio.on('disconnect')
+def disconnect():
+    print('Client disconnected')
+
 if __name__ == '__main__':
     threading.Thread(target=imageRecorder.capture, daemon=True).start()
-    app.run(host='0.0.0.0')
+    threading.Thread(target=broadcastThread, daemon=True).start()
+    socketio.run(app, host='0.0.0.0')
+    # app.run(host='0.0.0.0')
