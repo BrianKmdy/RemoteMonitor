@@ -2,34 +2,38 @@ from io import BytesIO
 import time
 import datetime
 from picamera import PiCamera
+import queue
 
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
-from PIL import ImageOps
+imageQueue = queue.Queue()
 
-# Create the in-memory stream
-camera = PiCamera()
-camera.resolution = (800, 600)
-camera.start_preview()
-stream = BytesIO()
-time.sleep(2)
+def getOverlayText():
+    return "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
 
-try:
-    i = 1
-    start = time.time()
-    for foo in camera.capture_continuous(stream, 'jpeg', use_video_port=True):
-        print('Captured image {} in time {:.2f}s'.format(i, time.time() - start))
-        image = ImageOps.flip(Image.open(stream))
-        draw = ImageDraw.Draw(image)
-        myFont = ImageFont.truetype('cnr.otf', 32)
-        draw.text((28, 600), "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")), font=myFont, fill=(255, 255, 255))
-        print('Processed image {} in time {:.2f}s'.format(i, time.time() - start))
+def capture():
+    print('Capture thread started')
 
-        image.save('capture.jpg')
-        print('Saved image {} in time {:.2f}s'.format(i, time.time() - start))
-        i += 1
+    # Create the in-memory stream
+    camera = PiCamera()
+    imageBytes = BytesIO()
+    camera.resolution = (640, 480)
+    camera.annotate_text_size = 15
+    camera.start_preview()
+    camera.annotate_text = getOverlayText()
+    time.sleep(2)
+
+    try:
+        i = 1
         start = time.time()
-        stream.seek(0)
-except KeyboardInterrupt:
-    pass
+
+        global imageQueue
+        for foo in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True):
+            print('Captured image {} in time {:.2f}s'.format(i, time.time() - start))
+            imageQueue.put(imageBytes.getvalue())
+            print('Saved image {} in time {:.2f}s'.format(i, time.time() - start))
+
+            i += 1
+            start = time.time()
+            imageBytes.seek(0)
+            camera.annotate_text = getOverlayText()
+    except KeyboardInterrupt:
+        pass
