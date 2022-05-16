@@ -6,12 +6,10 @@ import imageRecorder
 app = flask.Flask(__name__)
 socketio = flask_socketio.SocketIO(app)
 
-i = 0
 def broadcastThread():
-    global i
+    i = 0
     while True:
         image = imageRecorder.imageQueue.get()
-        print('Sending image ' + str(i))
         socketio.emit('frame', {'index': i, 'bytes': image})
         i += 1
 

@@ -4,8 +4,7 @@ import datetime
 from picamera import PiCamera
 import queue
 
-imageQueue = queue.Queue()
-maxFramerate = 30
+imageQueue = queue.Queue(maxsize=32)
 
 def getOverlayText():
     return "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
@@ -16,11 +15,13 @@ def capture():
     # Create the in-memory stream
     camera = PiCamera()
     imageBytes = BytesIO()
+    camera.vflip = True
     camera.resolution = (800, 600)
     camera.annotate_text_size = 15
-    camera.start_preview()
+    camera.framerate = 10
     camera.annotate_text = getOverlayText()
-    time.sleep(2)
+    camera.start_preview()
+    time.sleep(1)
 
     try:
         i = 1
@@ -32,7 +33,6 @@ def capture():
             print('Captured image {} in time {:.2f}s'.format(i, time.time() - start))
             imageQueue.put(imageBytes.getvalue())
             print('Saved image {} in time {:.2f}s'.format(i, time.time() - start))
-            time.sleep(max(0, 1 / maxFramerate - (time.time() - start)))
 
             i += 1
             start = time.time()
