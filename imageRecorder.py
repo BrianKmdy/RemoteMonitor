@@ -5,7 +5,7 @@ from picamera import PiCamera
 import queue
 
 imageQueue = queue.Queue()
-maxFramerate = 24
+maxFramerate = 30
 
 def getOverlayText():
     return "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
@@ -16,7 +16,7 @@ def capture():
     # Create the in-memory stream
     camera = PiCamera()
     imageBytes = BytesIO()
-    camera.resolution = (1024, 768)
+    camera.resolution = (800, 600)
     camera.annotate_text_size = 15
     camera.start_preview()
     camera.annotate_text = getOverlayText()

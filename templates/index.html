@@ -6,12 +6,12 @@
 
         <script type="module">
             import { io } from "https://cdn.socket.io/4.3.0/socket.io.esm.min.js";
-            var socket = io();
+            var socket = io({transports: ['websocket'], upgrade: false});
 
             let canvas = document.getElementById('video')
             let ctx = canvas.getContext('2d');
 
-            function draw(imageBytes){
+            async function draw(imageBytes){
                 var base64 = btoa(new Uint8Array(imageBytes).reduce((data, byte) => data + String.fromCharCode(byte), ''));
                 var image = new Image();
                 image.src = "data:image/jpeg;base64," + base64;

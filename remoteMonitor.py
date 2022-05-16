@@ -4,7 +4,7 @@ import threading
 import imageRecorder
 
 app = flask.Flask(__name__)
-socketio = flask_socketio.SocketIO(app, async_mode='threading')
+socketio = flask_socketio.SocketIO(app)
 
 i = 0
 def broadcastThread():
