@@ -4,7 +4,7 @@ import datetime
 from picamera import PiCamera
 import collections
 
-frameRate = 20
+frameRate = 24
 frameCount = 0
 
 maxQueueSize = frameRate * 1
@@ -25,7 +25,7 @@ def capture():
     camera = PiCamera()
     imageBytes = BytesIO()
     camera.vflip = True
-    camera.resolution = (1920, 1080)
+    camera.resolution = (1024, 720)
     camera.annotate_text_size = 15
     camera.framerate = frameRate
     camera.annotate_text = getOverlayText()
@@ -45,6 +45,6 @@ def capture():
             imageBytes.seek(0)
             camera.annotate_text = getOverlayText()
             if len(imageQueue) >= maxQueueSize:
-                time.sleep(0.1)
+                time.sleep(0.05)
     except KeyboardInterrupt:
         pass
