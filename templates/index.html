@@ -22,11 +22,13 @@
                 };
             }
 
+            var latestMessage = 0;
             socket.on('frame', function(message) {
-                console.log('Received image ' + message.index)
+                console.log('Received image ' + message.num)
+                latestMessage = message.num
+                socket.emit('ack', {'num': latestMessage});
                 draw(message.bytes)
             });
-
         </script>
     </body>
 </html>

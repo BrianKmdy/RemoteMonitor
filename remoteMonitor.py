@@ -2,27 +2,32 @@ import flask
 import flask_socketio
 import threading
 import imageRecorder
+import time
 
 app = flask.Flask(__name__)
 socketio = flask_socketio.SocketIO(app)
 
+lastAck = 0
+bufferSeconds = 1
+frameIndex = 0
+
 def broadcastThread():
-    i = 0
+    global lastAck
+    global bufferSeconds
+    global frameIndex
     while True:
-        image = imageRecorder.imageQueue.get()
-        socketio.emit('frame', {'index': i, 'bytes': image})
-        i += 1
+        print('Comparison: {} and {}'.format(frameIndex - lastAck, bufferSeconds * imageRecorder.frameRate))
+        if len(imageRecorder.imageQueue) > 0 and frameIndex - lastAck < bufferSeconds * imageRecorder.frameRate:
+            image = imageRecorder.imageQueue.popleft()
+            print('Sending frame {}'.format(frameIndex))
+            socketio.emit('frame', {'num': frameIndex, 'bytes': image})
+            frameIndex += 1
+        else:
+            time.sleep(0.1)
 
 @app.route('/')
 def home():
     return flask.render_template('index.html')
-
-@app.route('/capture')
-def capture():
-    if not imageRecorder.imageQueue.empty():
-        print(imageRecorder.imageQueue.qsize())
-        return flask.Response(imageRecorder.imageQueue.get(), mimetype="image/jpg")
-    return flask.Response()
 
 @socketio.on('connect')
 def connect(auth):
@@ -31,6 +36,12 @@ def connect(auth):
 @socketio.on('disconnect')
 def disconnect():
     print('Client disconnected')
+
+@socketio.on('ack')
+def handle_json(json):
+    global lastAck
+    print('Received ack ' + str(json))
+    lastAck = json['num']
 
 if __name__ == '__main__':
     threading.Thread(target=imageRecorder.capture, daemon=True).start()

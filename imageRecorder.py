@@ -2,9 +2,13 @@ from io import BytesIO
 import time
 import datetime
 from picamera import PiCamera
-import queue
+import collections
 
-imageQueue = queue.Queue(maxsize=32)
+frameRate = 20
+frameCount = 0
+
+maxQueueSize = frameRate * 1
+imageQueue = collections.deque(maxlen=maxQueueSize)
 
 def getOverlayText():
     return "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
@@ -12,32 +16,35 @@ def getOverlayText():
 def capture():
     print('Capture thread started')
 
+    global imageQueue
+    global frameRate
+    global frameCount
+    global maxQueueSize
+
     # Create the in-memory stream
     camera = PiCamera()
     imageBytes = BytesIO()
     camera.vflip = True
     camera.resolution = (1920, 1080)
     camera.annotate_text_size = 15
-    camera.framerate = 10
+    camera.framerate = frameRate
     camera.annotate_text = getOverlayText()
     camera.start_preview()
     time.sleep(1)
 
     try:
-        i = 1
         start = time.time()
+        for frame in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True, quality=10):
+            print('Captured image {} in time {:.2f}s'.format(frameCount, time.time() - start))
+            imageQueue.append(imageBytes.getvalue())
+            print('Queue size: {}'.format(len(imageQueue)))
+            print('Saved image {} in time {:.2f}s'.format(frameCount, time.time() - start))
 
-        global imageQueue
-        global maxFramerate
-        for pic in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True):
-            print('Captured image {} in time {:.2f}s'.format(i, time.time() - start))
-            imageQueue.put(imageBytes.getvalue())
-            print('Queue size: {}'.format(imageQueue.qsize()))
-            print('Saved image {} in time {:.2f}s'.format(i, time.time() - start))
-
-            i += 1
+            frameCount += 1
             start = time.time()
             imageBytes.seek(0)
             camera.annotate_text = getOverlayText()
+            if len(imageQueue) >= maxQueueSize:
+                time.sleep(0.1)
     except KeyboardInterrupt:
         pass
