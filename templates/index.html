@@ -1,6 +1,6 @@
 <html>
     <body>
-        <canvas id="video" width="1024" height="768"">
+        <canvas id="video" width="1920" height="1080"">
         Your browser does not support the HTML5 canvas tag.
         </canvas>
 
@@ -18,7 +18,7 @@
                 image.onload = () => {
                     ctx.imageSmoothingEnabled = false;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(image, 0, 0, 1024, 768);
+                    ctx.drawImage(image, 0, 0, 1920, 1080);
                 };
             }
 

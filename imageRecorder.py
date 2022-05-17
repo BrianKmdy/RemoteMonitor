@@ -16,7 +16,7 @@ def capture():
     camera = PiCamera()
     imageBytes = BytesIO()
     camera.vflip = True
-    camera.resolution = (800, 600)
+    camera.resolution = (1920, 1080)
     camera.annotate_text_size = 15
     camera.framerate = 10
     camera.annotate_text = getOverlayText()
@@ -32,6 +32,7 @@ def capture():
         for pic in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True):
             print('Captured image {} in time {:.2f}s'.format(i, time.time() - start))
             imageQueue.put(imageBytes.getvalue())
+            print('Queue size: {}'.format(imageQueue.qsize()))
             print('Saved image {} in time {:.2f}s'.format(i, time.time() - start))
 
             i += 1

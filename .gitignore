@@ -1,2 +1,4 @@
 humidity.log
 humidity.db
+*.otf
+*.pyc
