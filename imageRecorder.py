@@ -3,6 +3,7 @@ import time
 import datetime
 from picamera import PiCamera
 import collections
+import humidityReader
 
 frameRate = 16
 frameCount = 0
@@ -11,7 +12,10 @@ maxQueueSize = int(frameRate * 1)
 imageQueue = collections.deque(maxlen=maxQueueSize)
 
 def getOverlayText():
-    return "Recording on\n{}".format(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    return "{}\n{}C   {}%".format(
+        datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+        humidityReader.temperature,
+        humidityReader.temperature)
 
 def capture():
     print('Capture thread started')

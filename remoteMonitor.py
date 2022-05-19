@@ -3,6 +3,7 @@ import flask_socketio
 import threading
 import imageRecorder
 import time
+import humidityReader
 
 app = flask.Flask(__name__)
 socketio = flask_socketio.SocketIO(app)
@@ -56,4 +57,5 @@ def handle_json(json):
 if __name__ == '__main__':
     threading.Thread(target=imageRecorder.capture, daemon=True).start()
     threading.Thread(target=broadcastThread, daemon=True).start()
+    threading.Thread(target=humidityReader.getHumidityData, daemon=True).start()
     socketio.run(app, host='0.0.0.0')
