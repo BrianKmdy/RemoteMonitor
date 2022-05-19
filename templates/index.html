@@ -1,6 +1,6 @@
 <html>
     <body>
-        <canvas id="video" width="1024" height="720"">
+        <canvas id="video">
         Your browser does not support the HTML5 canvas tag.
         </canvas>
 
@@ -11,14 +11,27 @@
             let canvas = document.getElementById('video')
             let ctx = canvas.getContext('2d');
 
-            async function draw(imageBytes){
+            function getDimensions() {
+                var aspectRatio = 4 / 3;
+                var width = Math.floor(Math.min(document.body.clientWidth, document.body.clientHeight * aspectRatio));
+                var height = Math.floor(Math.min(document.body.clientHeight, document.body.clientWidth / aspectRatio));
+
+                return [width, height];
+            }
+
+            async function draw(imageBytes) {
+                const [width, height] = getDimensions();
+                if (canvas.width != width || canvas.height != height) {
+                    canvas.width = width, canvas.height = height;
+                }
+
                 var base64 = btoa(new Uint8Array(imageBytes).reduce((data, byte) => data + String.fromCharCode(byte), ''));
                 var image = new Image();
                 image.src = "data:image/jpeg;base64," + base64;
                 image.onload = () => {
                     ctx.imageSmoothingEnabled = false;
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(image, 0, 0, 1024, 720);
+                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
                 };
             }
 

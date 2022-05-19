@@ -4,10 +4,10 @@ import datetime
 from picamera import PiCamera
 import collections
 
-frameRate = 24
+frameRate = 16
 frameCount = 0
 
-maxQueueSize = frameRate * 1
+maxQueueSize = int(frameRate * 1)
 imageQueue = collections.deque(maxlen=maxQueueSize)
 
 def getOverlayText():
@@ -25,8 +25,8 @@ def capture():
     camera = PiCamera()
     imageBytes = BytesIO()
     camera.vflip = True
-    camera.resolution = (1024, 720)
-    camera.annotate_text_size = 15
+    camera.resolution = (640, 480)
+    camera.annotate_text_size = 18
     camera.framerate = frameRate
     camera.annotate_text = getOverlayText()
     camera.start_preview()
@@ -34,7 +34,7 @@ def capture():
 
     try:
         start = time.time()
-        for frame in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True, quality=10):
+        for frame in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True):
             print('Captured image {} in time {:.2f}s'.format(frameCount, time.time() - start))
             imageQueue.append(imageBytes.getvalue())
             print('Queue size: {}'.format(len(imageQueue)))
