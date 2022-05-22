@@ -18,6 +18,7 @@ def broadcastThread():
     global lastAck
     global bufferSeconds
     global frameIndex
+    global clientsConnected
     while True:
         if clientsConnected < 1:
             time.sleep(0.1)
@@ -39,7 +40,10 @@ def home():
 @socketio.on('connect')
 def connect(auth):
     global clientsConnected
+    global frameIndex
+    global lastAck
     clientsConnected += 1
+    lastAck = frameIndex
     print('User connected')
 
 @socketio.on('disconnect')
@@ -52,7 +56,7 @@ def disconnect():
 def handle_json(json):
     global lastAck
     print('Received ack ' + str(json))
-    lastAck = json['num']
+    lastAck = max(lastAck, json['num'])
 
 if __name__ == '__main__':
     threading.Thread(target=imageRecorder.capture, daemon=True).start()
