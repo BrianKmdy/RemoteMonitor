@@ -35,7 +35,7 @@ def capture():
     camera.framerate = frameRate
     camera.annotate_text = getOverlayText()
     camera.start_preview()
-    time.sleep(1)
+    time.sleep(2)
 
     try:
         start = time.time()
