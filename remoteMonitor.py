@@ -9,7 +9,7 @@ app = flask.Flask(__name__)
 socketio = flask_socketio.SocketIO(app)
 
 lastAck = 0
-bufferSeconds = 0.5
+bufferSeconds = 5
 frameIndex = 0
 
 clientsConnected = 0

@@ -5,14 +5,15 @@ from picamera import PiCamera
 import collections
 import humidityReader
 
-frameRate = 16
+frameRate = 2
 frameCount = 0
+bufferSeconds = 10
 
-maxQueueSize = int(frameRate * 1)
+maxQueueSize = int(frameRate * bufferSeconds)
 imageQueue = collections.deque(maxlen=maxQueueSize)
 
 def getOverlayText():
-    return "{}\n{}C   {}%".format(
+    return "{}\n{:.1f}C   {:.1f}%".format(
         datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         humidityReader.temperature,
         humidityReader.temperature)
@@ -29,8 +30,8 @@ def capture():
     camera = PiCamera()
     imageBytes = BytesIO()
     camera.vflip = True
-    camera.resolution = (640, 480)
-    camera.annotate_text_size = 18
+    camera.resolution = (1440, 1080)
+    camera.annotate_text_size = 20
     camera.framerate = frameRate
     camera.annotate_text = getOverlayText()
     camera.start_preview()
@@ -38,7 +39,7 @@ def capture():
 
     try:
         start = time.time()
-        for frame in camera.capture_continuous(imageBytes, 'jpeg', use_video_port=True):
+        for frame in camera.capture_continuous(imageBytes, 'jpeg', burst=True, quality=50):
             print('Captured image {} in time {:.2f}s'.format(frameCount, time.time() - start))
             imageQueue.append(imageBytes.getvalue())
             print('Queue size: {}'.format(len(imageQueue)))
@@ -47,8 +48,7 @@ def capture():
             frameCount += 1
             start = time.time()
             imageBytes.seek(0)
+            imageBytes.truncate()
             camera.annotate_text = getOverlayText()
-            if len(imageQueue) >= maxQueueSize:
-                time.sleep(0.05)
     except KeyboardInterrupt:
         pass
