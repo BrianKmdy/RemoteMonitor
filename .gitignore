@@ -1,4 +1,6 @@
 humidity.log
 humidity.db
+auth.json
+email.yaml
 *.otf
 *.pyc

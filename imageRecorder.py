@@ -44,7 +44,7 @@ def capture():
         start = time.time()
         for frame in camera.capture_continuous(imageBytes, 'jpeg', burst=True, quality=35):
             print('Captured image {} in time {:.2f}s'.format(frameCount, time.time() - start))
-            imageQueue.append(imageBytes.getvalue())
+            imageQueue.append(BytesIO(imageBytes.getvalue()))
 
             frameCount += 1
             imageBytes.seek(0)
